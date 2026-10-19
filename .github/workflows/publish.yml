@@ -1,8 +1,11 @@
 name: Publicar revista Asteriums
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['web/**', '.github/workflows/publish.yml']
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 concurrency:
@@ -15,6 +18,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
       - name: Descargar paquete original
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,6 +41,20 @@ jobs:
           assert len(list((root / "assets/thumbnails").glob("*.png"))) == 60
           print("Integridad verificada: 60 paginas, 14 MP4 originales y perfiles.")
           PY
+      - name: Aplicar el visor de libro
+        run: cp web/* package/asteriums-web/
+      - name: Crear descarga actualizada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd package
+          zip -qr ../Asteriums_Revista_Flipbook.zip asteriums-web
+          cd ..
+          if gh release view v1.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload v1.1.0 Asteriums_Revista_Flipbook.zip --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create v1.1.0 Asteriums_Revista_Flipbook.zip --target "$GITHUB_SHA" --title "Asteriums · Revista con efecto de libro" --notes "Visor con giro de hojas, lomo y grosor de páginas. Incluye las 60 páginas, los 14 videos originales y los 84 perfiles." --repo "$GITHUB_REPOSITORY"
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
