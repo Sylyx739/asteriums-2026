@@ -1,0 +1,49 @@
+name: Publicar revista Asteriums
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar paquete original
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern Asteriums_Web_Lista_Para_Publicar.zip
+      - name: Verificar y extraer
+        run: |
+          echo "70f7f2fee2e9dbf81bac8f99e0f900f7cb4168761ed73af7469277bff3162a89  Asteriums_Web_Lista_Para_Publicar.zip" | sha256sum --check
+          unzip -q Asteriums_Web_Lista_Para_Publicar.zip -d package
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path("package/asteriums-web")
+          manifest = json.loads((root / "asset-manifest.json").read_text())
+          for resource in manifest["resources"].values():
+              file = root / resource["path"]
+              assert file.stat().st_size == resource["bytes"], str(file)
+              assert hashlib.sha256(file.read_bytes()).hexdigest() == resource["sha256"], str(file)
+          assert len(list((root / "assets/videos").glob("*.mp4"))) == 14
+          assert len(list((root / "assets/pages").glob("*.webp"))) == 46
+          assert len(list((root / "assets/thumbnails").glob("*.png"))) == 60
+          print("Integridad verificada: 60 paginas, 14 MP4 originales y perfiles.")
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: package/asteriums-web
+          include-hidden-files: true
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
