@@ -1,0 +1,31 @@
+/* Book binding and page turns; the original media remains in the reader. */
+body:before{background:radial-gradient(ellipse at 50% 43%,#46505a 0,#252c34 62%,#161d26 100%)}
+#spread{isolation:isolate;perspective:2400px;gap:6px;padding-bottom:8px}
+#spread figure{isolation:isolate}
+#spread figure:after{content:'';position:absolute;inset:3px -4px 23px;background:repeating-linear-gradient(0deg,#d8d4cb 0 1px,#faf5e8 1px 3px);border-radius:2px;transform:translateY(4px);z-index:-1;box-shadow:0 17px 27px #0007,0 3px 4px #0009}
+#spread figure .sheet{border-radius:1px;box-shadow:0 3px 8px #0005}
+#spread.book-open:after{content:'';position:absolute;left:calc(50% - 3px);top:0;bottom:34px;width:6px;background:linear-gradient(90deg,#070b10b8,#aaa6a144 45%,#05080dc9);box-shadow:0 0 8px #0009;pointer-events:none;z-index:5}
+#spread.book-cover figure:after{inset:3px -5px 22px;border-right:5px solid #1d3541;border-bottom:5px solid #1d3541;border-radius:2px 5px 5px 2px}
+#spread.turn figure .sheet{animation:none!important}
+#spread figcaption{padding-top:10px}
+.book-turn-stage{position:fixed;inset:0;z-index:26;pointer-events:none;perspective:2400px;perspective-origin:50% 45%}
+.book-turn-leaf{position:absolute;transform-style:preserve-3d;will-change:transform;box-shadow:0 4px 12px #0004}
+.book-turn-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;background:#f1ebdf;border:1px solid #ddd6ca66}
+.book-turn-face.back{transform:rotateY(180deg)}
+.book-turn-face canvas,.book-turn-face img{display:block;width:100%;height:100%;object-fit:contain;background:#0c1520}
+.book-turn-face:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#0003,transparent 18%,transparent 75%,#0002);opacity:0;animation:leaf-light .82s ease-in-out}
+.book-turn-under{position:absolute;overflow:hidden;background:#0c1520;box-shadow:0 3px 8px #0005}
+.book-turn-under canvas{width:100%;height:100%;display:block;object-fit:contain}
+.book-turn-stage.forward .book-turn-leaf{transform-origin:left center;animation:book-forward .82s cubic-bezier(.3,.08,.22,1) both}
+.book-turn-stage.backward .book-turn-leaf{transform-origin:right center;animation:book-backward .82s cubic-bezier(.3,.08,.22,1) both}
+.book-turn-stage .book-turn-under{animation:old-page .82s linear both}
+.book-turn-stage.single.forward .book-turn-leaf{animation:cover-forward .82s cubic-bezier(.3,.08,.22,1) both}
+.book-turn-stage.single.backward .book-turn-leaf{animation:cover-backward .82s cubic-bezier(.3,.08,.22,1) both}
+body.book-turning .edge{opacity:.35}
+@keyframes book-forward{0%{transform:rotateY(0)}45%{transform:rotateY(-83deg) translateZ(16px)}100%{transform:rotateY(-180deg)}}
+@keyframes book-backward{0%{transform:rotateY(0)}45%{transform:rotateY(83deg) translateZ(16px)}100%{transform:rotateY(180deg)}}
+@keyframes cover-forward{0%{transform:rotateY(0);opacity:1}80%{opacity:1}100%{transform:rotateY(-155deg);opacity:0}}
+@keyframes cover-backward{0%{transform:rotateY(0);opacity:1}80%{opacity:1}100%{transform:rotateY(155deg);opacity:0}}
+@keyframes old-page{0%,60%{opacity:1}100%{opacity:0}}
+@keyframes leaf-light{0%,100%{opacity:0}45%,60%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.book-turn-stage{display:none}}
